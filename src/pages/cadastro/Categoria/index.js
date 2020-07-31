@@ -1,64 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 
 import PageDefault from '../../PageDefault';
 import FormField from '../../../components/FormField';
+import Button from '../../../components/Button';
 
 function CadastroCategoria() {
   const initialData = { nome: '', descricao: '', cor: '' };
   const [categorias, setCategorias] = useState([]);
-  const [formData, setFormData] = useState(() => initialData);
+  const [values, setValues] = useState(initialData);
 
   function setValue(key, value) {
-    setFormData({ ...formData, [key]: value });
+    setValues({ ...values, [key]: value });
   }
 
   function handleChange(e) {
-    const { getAttribute, value } = e.target;
-    setValue(getAttribute('name'), value);
+    setValue(e.target.getAttribute('name'), e.target.value);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
-    setCategorias([...categorias, formData]);
-    setFormData(initialData);
+    setCategorias([...categorias, values]);
+    setValues(initialData);
   }
+
+  useEffect(() => {
+    const URL = 'http://localhost:8080/categorias';
+    fetch(URL)
+      .then(async (response) => {
+        const categoriasResponse = await response.json();
+        setCategorias([...categoriasResponse]);
+      });
+  }, []);
 
   return (
     <PageDefault>
       <h1>Cadastro de Categoria</h1>
       <form onSubmit={handleSubmit}>
         <FormField
-          label='Nome da Categoria'
-          type='text'
-          name='nome'
-          value={formData.nome}
-          onChange={handleChange}
+          label="Nome da Categoria"
+          type="text"
+          name="nome"
+          value={values.nome}
+          handleChange={handleChange}
         />
         <FormField
-          label='Descrição'
-          type='textarea'
-          name='descricao'
-          value={formData.descricao}
-          onChange={handleChange}
+          label="Descrição"
+          type="textarea"
+          name="descricao"
+          value={values.descricao}
+          handleChange={handleChange}
         />
         <FormField
-          label='Cor'
-          type='color'
-          name='cor'
-          value={formData.cor}
-          onChange={handleChange}
+          label="Cor"
+          type="color"
+          name="cor"
+          value={values.cor}
+          handleChange={handleChange}
         />
-        <button>Cadastrar</button>
+        <Button>Cadastrar</Button>
       </form>
+
+      {!categorias.length && <div>Carregando pra você...</div>}
+
       <ul>
-        {categorias.map((categoria, index) => (
-          <li key={`${categoria}${index}`}>{categoria.nome}</li>
+        {categorias.map((categoria) => (
+          <li key={`${categoria.nome}`}>{categoria.nome}</li>
         ))}
       </ul>
-      <Link to='/'>Ir para home</Link>
+      <Link to="/">Ir para home</Link>
     </PageDefault>
   );
-};
+}
 
 export default CadastroCategoria;
