@@ -4,32 +4,29 @@ import { Link } from 'react-router-dom/cjs/react-router-dom.min';
 import PageDefault from '../../PageDefault';
 import FormField from '../../../components/FormField';
 import Button from '../../../components/Button';
+import useForm from '../../../hooks/useForm';
+
+import categoriasRepository from '../../../repositories/categorias';
 
 function CadastroCategoria() {
-  const initialData = { nome: '', descricao: '', cor: '' };
+  const initialData = { titulo: '', descricao: '', cor: '' };
+  const { values, handleChange, clearForm } = useForm(initialData);
   const [categorias, setCategorias] = useState([]);
-  const [values, setValues] = useState(initialData);
-
-  function setValue(key, value) {
-    setValues({ ...values, [key]: value });
-  }
-
-  function handleChange(e) {
-    setValue(e.target.getAttribute('name'), e.target.value);
-  }
 
   function handleSubmit(e) {
     e.preventDefault();
     setCategorias([...categorias, values]);
-    setValues(initialData);
+    clearForm();
   }
 
   useEffect(() => {
-    const URL = window.location.hostname.includes('localhost') ? 'http://localhost:8080/categorias' : 'https://rsflix.herokuapp.com/categorias';
-    fetch(URL)
-      .then(async (response) => {
-        const categoriasResponse = await response.json();
-        setCategorias([...categoriasResponse]);
+    categoriasRepository.getAll()
+      .then((response) => {
+        setCategorias(response);
+      })
+      .catch((err) => {
+        /* eslint-disable no-console */
+        console.log(err);
       });
   }, []);
 
@@ -38,10 +35,10 @@ function CadastroCategoria() {
       <h1>Cadastro de Categoria</h1>
       <form onSubmit={handleSubmit}>
         <FormField
-          label="Nome da Categoria"
+          label="Título da Categoria"
           type="text"
-          name="nome"
-          value={values.nome}
+          name="titulo"
+          value={values.titulo}
           handleChange={handleChange}
         />
         <FormField
@@ -65,7 +62,7 @@ function CadastroCategoria() {
 
       <ul>
         {categorias.map((categoria) => (
-          <li key={`${categoria.nome}`}>{categoria.nome}</li>
+          <li key={`${categoria.titulo}`}>{categoria.titulo}</li>
         ))}
       </ul>
       <Link to="/">Ir para home</Link>

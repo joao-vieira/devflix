@@ -68,12 +68,14 @@ const Input = styled.input`
 `;
 
 function FormField({
-  label, type, name, value, handleChange,
+  label, type, name, value, handleChange, suggestions,
 }) {
   const fieldId = useMemo(() => `id_${name}`, [name]);
   const isTypeTextArea = useMemo(() => type === 'textarea', [type]);
   const tag = useMemo(() => (isTypeTextArea ? 'textarea' : 'input'), [isTypeTextArea]);
+
   const hasValue = useMemo(() => Boolean(value.length), [value]);
+  const hasSuggestion = useMemo(() => Boolean(suggestions.length), [suggestions]);
 
   return (
     <FormFieldWrapper>
@@ -86,11 +88,20 @@ function FormField({
           hasValue={hasValue}
           name={name}
           onChange={handleChange}
+          autoComplete={hasSuggestion ? 'off' : 'on'}
+          list={hasSuggestion ? `suggestionFor_${fieldId}` : 'on'}
         />
         <Label.Text>
           {label}
           :
         </Label.Text>
+        {hasSuggestion && (
+          <datalist id={`suggestionFor_${fieldId}`}>
+            {suggestions.map((suggestion) => (
+              <option key={`suggestionFor_${fieldId}_option_${suggestion}`} value={suggestion}>{suggestion}</option>
+            ))}
+          </datalist>
+        )}
       </Label>
     </FormFieldWrapper>
   );
@@ -100,6 +111,7 @@ FormField.defaultProps = {
   type: 'text',
   value: '',
   handleChange: () => { },
+  suggestions: [],
 };
 
 FormField.propTypes = {
@@ -108,6 +120,7 @@ FormField.propTypes = {
   type: PropTypes.string,
   value: PropTypes.string,
   handleChange: PropTypes.func,
+  suggestions: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default FormField;
